@@ -81,11 +81,15 @@ export class AuthComponent {
   onSubmit() {
     this.error.set('');
     
+    // Trim whitespace from inputs to prevent login issues
+    const username = this.username.trim();
+    const password = this.password.trim();
+
     if (this.mode() === 'login') {
-        const success = this.authService.login(this.username, this.password);
+        const success = this.authService.login(username, password);
         if (!success) this.error.set('Invalid credentials.');
     } else {
-        const success = this.authService.signup(this.username, this.password);
+        const success = this.authService.signup(username, password);
         if (!success) this.error.set('Username already exists.');
     }
   }
