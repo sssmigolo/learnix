@@ -66,8 +66,21 @@ import { GeminiService } from '../services/gemini.service';
         </div>
       </div>
 
+      <!-- Error Display -->
+      @if (error()) {
+        <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 flex items-center justify-between gap-3 animate-fade-in-up">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <span class="text-sm font-medium">{{ error() }}</span>
+            </div>
+            <button (click)="error.set(null)" class="p-1 rounded-full hover:bg-white/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+      }
+
       <!-- Results Section -->
-      @if (result()) {
+      @if (result() && !isLoading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           
           <!-- Perspectives Comparison -->
@@ -198,6 +211,7 @@ export class CurriculumBlenderComponent {
   // State
   isLoading = signal(false);
   result = signal<any>(null);
+  error = signal<string | null>(null);
   
   darkMode = signal(true); 
 
@@ -240,7 +254,8 @@ export class CurriculumBlenderComponent {
     if (!this.topic) return;
     
     this.isLoading.set(true);
-    this.result.set(null); // clear previous
+    this.result.set(null);
+    this.error.set(null);
     this.resetQuiz();
 
     try {
@@ -250,8 +265,8 @@ export class CurriculumBlenderComponent {
         this.intlStandard || 'International Standard'
       );
       this.result.set(data);
-    } catch (e) {
-      alert('Failed to generate blend. Please check your API key or try again.');
+    } catch (e: any) {
+      this.error.set(e.message || 'An unexpected error occurred.');
     } finally {
       this.isLoading.set(false);
     }

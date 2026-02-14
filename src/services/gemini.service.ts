@@ -12,6 +12,41 @@ export class GeminiService {
     this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
   }
 
+  private handleError(e: any, context: string): Error {
+    console.error(`Error in ${context}:`, e);
+    
+    // The actual error details might be nested inside an 'error' property.
+    const errorDetails = e?.error || e;
+
+    // Check for specific statuses from the Gemini API error object
+    if (errorDetails?.status) {
+        switch (errorDetails.status) {
+            case 'RESOURCE_EXHAUSTED':
+                return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
+            case 'PERMISSION_DENIED':
+                return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
+            case 'UNKNOWN': // This covers 500 errors like the one reported
+                return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
+        }
+    }
+
+    // Fallback checks on the raw message if the status isn't available
+    const errorMessage = (errorDetails?.message || e?.message || '').toString().toLowerCase();
+
+    if (errorMessage.includes('429') || errorMessage.includes('resource_exhausted')) {
+        return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
+    }
+    if (errorMessage.includes('403') || errorMessage.includes('permission_denied')) {
+        return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
+    }
+    if (errorMessage.includes('500') || errorMessage.includes('xhr error') || errorMessage.includes('internal error')) {
+        return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
+    }
+    
+    // Final generic fallback
+    return new Error(`Could not ${context}. The AI model might be unavailable or an unknown error occurred.`);
+  }
+
   // Generates a Brilliant-style interactive lesson
   async generateInteractiveLesson(topic: string, domain: string) {
     const model = 'gemini-2.5-flash';
@@ -109,8 +144,7 @@ export class GeminiService {
       const jsonText = response.text.trim();
       return JSON.parse(jsonText);
     } catch (e) {
-      console.error('Failed to generate lesson:', e);
-      throw new Error('Could not generate the lesson. The AI model might be unavailable.');
+      throw this.handleError(e, 'generate lesson');
     }
   }
   
@@ -181,8 +215,7 @@ export class GeminiService {
       const jsonText = response.text.trim();
       return JSON.parse(jsonText);
     } catch (e) {
-      console.error('Failed to blend curriculum:', e);
-      throw new Error('Could not blend the curriculum.');
+      throw this.handleError(e, 'blend curriculum');
     }
   }
 
@@ -251,11 +284,11 @@ export class GeminiService {
         const jsonText = response.text.trim();
         return JSON.parse(jsonText);
     } catch(e) {
-        console.error('Code evaluation failed:', e);
+        const error = this.handleError(e, 'evaluate code');
         return {
             isCorrect: false,
-            feedback: 'The AI evaluator encountered an error. Please try again.',
-            output: 'No output.'
+            feedback: error.message,
+            output: 'Evaluation failed.'
         };
     }
   }
@@ -284,7 +317,8 @@ export class GeminiService {
       }
       return 'https://picsum.photos/seed/fallback/600/600';
     } catch (e) {
-      console.error('Failed to generate image:', e);
+      const error = this.handleError(e, 'generate image');
+      console.error(error.message); // Log specific error for debugging
       return 'https://picsum.photos/seed/error/600/600';
     }
   }

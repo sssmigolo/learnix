@@ -18,42 +18,44 @@ declare var hljs: any;
       <canvas #confettiCanvas class="absolute inset-0 pointer-events-none z-50"></canvas>
 
       <!-- Top Bar: Progress & Lives -->
-      <div class="flex items-center justify-between p-4 pb-0 z-10 relative">
-        <button (click)="exitAndClearProgress()" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-        
-        <!-- Progress Bar -->
-        <div class="flex-1 mx-6 h-2 bg-gray-200/20 rounded-full overflow-hidden">
-          <div 
-            class="h-full bg-flash-accent transition-all duration-500 ease-out"
-            [style.width]="progressPercentage() + '%'"
-          ></div>
+      @if (!error()) {
+        <div class="flex items-center justify-between p-4 pb-0 z-10 relative">
+          <button (click)="exitAndClearProgress()" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+          
+          <!-- Progress Bar -->
+          <div class="flex-1 mx-6 h-2 bg-gray-200/20 rounded-full overflow-hidden">
+            <div 
+              class="h-full bg-flash-accent transition-all duration-500 ease-out"
+              [style.width]="progressPercentage() + '%'"
+            ></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex items-center gap-4">
+               <!-- Combo Counter -->
+               @if (combo() > 1) {
+                  <div class="flex items-center gap-1 font-black text-orange-400 animate-bounce">
+                      <span class="text-lg">x{{ combo() }}</span>
+                      <span class="text-xs uppercase">Combo</span>
+                  </div>
+               }
+
+              <!-- Hints Counter -->
+               <div class="flex items-center gap-1 text-yellow-400 font-bold" title="Hints Remaining">
+                  <span>{{ hintsAvailable() }}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 0 1 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
+               </div>
+
+              <!-- Hearts / Lives -->
+              <div class="flex items-center gap-1 text-red-500 font-bold transition-transform" [class.scale-125]="livesChanged()">
+                <span>{{ lives() }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 14c1.49-1.28 3.6-2.34 4.58-3.72a6.93 6.93 0 0 0-1.6-8.86 6.93 6.93 0 0 0-8.98.7L12 3.16l-1-1.04A6.93 6.93 0 0 0 2.02 2.12a6.93 6.93 0 0 0-1.6 8.86c.98 1.38 3.1 2.44 4.58 3.72L12 22l7-8z"/></svg>
+              </div>
+          </div>
         </div>
-
-        <!-- Stats -->
-        <div class="flex items-center gap-4">
-             <!-- Combo Counter -->
-             @if (combo() > 1) {
-                <div class="flex items-center gap-1 font-black text-orange-400 animate-bounce">
-                    <span class="text-lg">x{{ combo() }}</span>
-                    <span class="text-xs uppercase">Combo</span>
-                </div>
-             }
-
-            <!-- Hints Counter -->
-             <div class="flex items-center gap-1 text-yellow-400 font-bold" title="Hints Remaining">
-                <span>{{ hintsAvailable() }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 0 1 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
-             </div>
-
-            <!-- Hearts / Lives -->
-            <div class="flex items-center gap-1 text-red-500 font-bold transition-transform" [class.scale-125]="livesChanged()">
-              <span>{{ lives() }}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 14c1.49-1.28 3.6-2.34 4.58-3.72a6.93 6.93 0 0 0-1.6-8.86 6.93 6.93 0 0 0-8.98.7L12 3.16l-1-1.04A6.93 6.93 0 0 0 2.02 2.12a6.93 6.93 0 0 0-1.6 8.86c.98 1.38 3.1 2.44 4.58 3.72L12 22l7-8z"/></svg>
-            </div>
-        </div>
-      </div>
+      }
 
       <!-- Loading State -->
       @if (isLoading()) {
@@ -62,10 +64,19 @@ declare var hljs: any;
           <p class="text-lg font-medium opacity-80">Generating Interactive Lesson...</p>
           <p class="text-sm opacity-50">Crafting challenges for {{ topic() }}</p>
         </div>
-      } 
-      
-      <!-- Content State -->
-      @else if (lessonData()) {
+      } @else if (error()) {
+        <div class="flex-1 flex flex-col items-center justify-center text-center p-8 animate-fade-in">
+            <div class="w-16 h-16 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h2 class="text-xl font-bold text-red-400">Lesson Generation Failed</h2>
+            <p class="opacity-70 mt-2 mb-6 max-w-md">{{ error() }}</p>
+            <div class="flex gap-4">
+                <button (click)="exitAndClearProgress()" class="px-6 py-2 bg-white/5 hover:bg-white/10 rounded-full font-bold">Back to Dashboard</button>
+                <button (click)="loadLesson()" class="px-6 py-2 bg-flash-primary text-white hover:bg-blue-600 rounded-full font-bold">Try Again</button>
+            </div>
+        </div>
+      } @else if (lessonData()) {
         <div class="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
             <div class="max-w-3xl mx-auto w-full animate-fade-in space-y-8">
                 <!-- Lesson Intro -->
@@ -502,6 +513,7 @@ export class LessonViewerComponent implements OnDestroy {
 
   lessonData = signal<any>(null);
   isLoading = signal(true);
+  error = signal<string | null>(null);
   
   currentChallengeIndex = signal(0);
   lives = signal(3);
@@ -696,6 +708,7 @@ export class LessonViewerComponent implements OnDestroy {
     this.clearProgress();
     
     this.isLoading.set(true);
+    this.error.set(null);
     this.lessonData.set(null);
     this.currentChallengeIndex.set(0);
     this.isLessonComplete.set(false);
@@ -752,10 +765,12 @@ export class LessonViewerComponent implements OnDestroy {
           this.startExampleCooldown();
       } else {
           console.error("Invalid lesson data structure");
+          this.error.set('The AI returned an invalid lesson format. Please try again.');
           this.lessonData.set(null);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      this.error.set(err.message || 'An unexpected error occurred while generating the lesson.');
     } finally {
       this.isLoading.set(false);
     }
