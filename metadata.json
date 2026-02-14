@@ -1,0 +1,7 @@
+{
+  "name": "Learnix",
+  "description": "An intelligent education platform blending local and international curriculums with AI-driven insights, wrapped in a stunning glassmorphic UI.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
