@@ -9,7 +9,10 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    const apiKey = (typeof process !== 'undefined' && process.env ? (process.env['GEMINI_API_KEY'] || process.env['API_KEY']) : null)
+                   || (globalThis as any).GEMINI_API_KEY
+                   || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   private handleError(e: any, context: string): Error {
@@ -141,7 +144,10 @@ export class GeminiService {
         }
       });
       
-      const jsonText = response.text.trim();
+      const jsonText = response.text?.trim();
+      if (!jsonText) {
+          throw new Error('The AI returned an empty response.');
+      }
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'generate lesson');
@@ -212,7 +218,10 @@ export class GeminiService {
           responseSchema: schema
         }
       });
-      const jsonText = response.text.trim();
+      const jsonText = response.text?.trim();
+      if (!jsonText) {
+          throw new Error('The AI returned an empty response.');
+      }
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'blend curriculum');
@@ -281,7 +290,10 @@ export class GeminiService {
               responseSchema: schema
             }
         });
-        const jsonText = response.text.trim();
+        const jsonText = response.text?.trim();
+        if (!jsonText) {
+            throw new Error('The AI returned an empty response.');
+        }
         return JSON.parse(jsonText);
     } catch(e) {
         const error = this.handleError(e, 'evaluate code');
@@ -309,7 +321,7 @@ export class GeminiService {
         },
       });
 
-      if (response.generatedImages && response.generatedImages.length > 0) {
+      if (response?.generatedImages && response.generatedImages.length > 0 && response.generatedImages[0].image?.imageBytes) {
         const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
         const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
         this.imageCache.set(prompt, imageUrl);

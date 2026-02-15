@@ -240,7 +240,8 @@ declare var hljs: any;
                                             
                                             <!-- Actual textarea (on top) -->
                                             <textarea 
-                                                [(ngModel)]="userCode"
+                                                [ngModel]="userCode()"
+                                                (ngModelChange)="userCode.set($event)"
                                                 (scroll)="syncScroll($event)"
                                                 spellcheck="false"
                                                 class="editor-textarea absolute inset-0 w-full h-40 bg-transparent text-transparent caret-white font-mono text-sm p-4 rounded-xl border-transparent focus:outline-none focus:border-flash-accent focus:ring-1 focus:ring-flash-accent resize-none leading-relaxed overflow-auto custom-scrollbar"
@@ -845,6 +846,9 @@ export class LessonViewerComponent implements OnDestroy {
   showExample() {
     if (this.exampleSolutionCooldown() > 0 || this.hasAnswered()) return;
     
+    const confirmReveal = window.confirm("Revealing the example solution will mark this challenge as incorrect. Are you sure?");
+    if (!confirmReveal) return;
+
     this.showExampleSolution.set(true);
     this.processAnswer(false); // Process as incorrect answer
     this.hasAnswered.set(true);
@@ -976,17 +980,19 @@ export class LessonViewerComponent implements OnDestroy {
 
   selectMiniQuizOption(cIdx: number, qIdx: number, optionIdx: number) {
     const currentState = this.miniQuizState();
-    if (currentState[cIdx][qIdx].selected !== null) return;
+    if (currentState[cIdx]?.[qIdx]?.selected !== null) return;
 
     const concept = this.lessonData().coreConcepts[cIdx];
     const quiz = concept.miniQuiz[qIdx];
     const isCorrect = optionIdx === quiz.correctIndex;
 
-    this.miniQuizState.update(current => {
-        const newState = JSON.parse(JSON.stringify(current)); // simple deep copy
-        newState[cIdx][qIdx] = { selected: optionIdx, correct: isCorrect };
-        return newState;
-    });
+    this.miniQuizState.update(current => ({
+      ...current,
+      [cIdx]: {
+        ...(current[cIdx] || {}),
+        [qIdx]: { selected: optionIdx, correct: isCorrect }
+      }
+    }));
 
     if (isCorrect) {
         this.userService.addXp(5); // Award small XP for mini-quiz
