@@ -143,12 +143,13 @@ export class AuthService {
     const users = [...this.usersSignal()];
     const index = users.findIndex(u => u.username === updatedUser.username);
     if (index !== -1) {
-      users[index] = updatedUser;
+      const freshUser = { ...updatedUser };
+      users[index] = freshUser;
       this.persist(users);
       
       // Also update currentUser if the updated user is the one logged in
-      if (this.currentUser()?.username === updatedUser.username) {
-          this.currentUser.set(updatedUser); 
+      if (this.currentUser()?.username === freshUser.username) {
+          this.currentUser.set(freshUser);
       }
     }
   }
@@ -163,16 +164,24 @@ export class AuthService {
     const diffTime = nowDate.getTime() - lastLoginDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+    let updatedStreak = user.streak;
+    let updatedQuests = user.quests;
+
     if (diffDays === 1) {
-      user.streak += 1;
-      user.quests = this.generateDailyQuests();
+      updatedStreak += 1;
+      updatedQuests = this.generateDailyQuests();
     } else if (diffDays > 1) {
-      user.streak = 1;
-      user.quests = this.generateDailyQuests();
+      updatedStreak = 1;
+      updatedQuests = this.generateDailyQuests();
     }
 
-    user.lastLogin = Date.now();
-    this.updateUser(user);
+    const updatedUser = {
+        ...user,
+        streak: updatedStreak,
+        quests: updatedQuests,
+        lastLogin: Date.now()
+    };
+    this.updateUser(updatedUser);
   }
 
   private generateDailyQuests() {
