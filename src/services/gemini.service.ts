@@ -9,7 +9,8 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    const apiKey = (typeof process !== 'undefined' && process.env ? (process.env['GEMINI_API_KEY'] || process.env['API_KEY']) : '') || (globalThis as any).GEMINI_API_KEY || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   private handleError(e: any, context: string): Error {
@@ -141,7 +142,10 @@ export class GeminiService {
         }
       });
       
-      const jsonText = response.text.trim();
+      const jsonText = response.text?.trim();
+      if (!jsonText) {
+        throw new Error('The AI returned an empty response. Please try again.');
+      }
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'generate lesson');
@@ -212,7 +216,10 @@ export class GeminiService {
           responseSchema: schema
         }
       });
-      const jsonText = response.text.trim();
+      const jsonText = response.text?.trim();
+      if (!jsonText) {
+        throw new Error('The AI returned an empty response. Please try again.');
+      }
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'blend curriculum');
@@ -281,7 +288,10 @@ export class GeminiService {
               responseSchema: schema
             }
         });
-        const jsonText = response.text.trim();
+        const jsonText = response.text?.trim();
+        if (!jsonText) {
+          throw new Error('Empty evaluation response.');
+        }
         return JSON.parse(jsonText);
     } catch(e) {
         const error = this.handleError(e, 'evaluate code');
