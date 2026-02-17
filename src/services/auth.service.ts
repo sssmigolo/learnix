@@ -99,8 +99,13 @@ export class AuthService {
   }
 
   signup(username: string, password?: string, isGoogle = false): boolean {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername || (!isGoogle && (!password || !password.trim()))) {
+        return false;
+    }
+
     const users = [...this.usersSignal()];
-    if (users.find(u => u.username === username)) {
+    if (users.find(u => u.username === trimmedUsername)) {
       return false; // User exists
     }
 
@@ -140,16 +145,16 @@ export class AuthService {
   }
 
   updateUser(updatedUser: User) {
-    const users = [...this.usersSignal()];
-    const index = users.findIndex(u => u.username === updatedUser.username);
-    if (index !== -1) {
-      users[index] = updatedUser;
-      this.persist(users);
-      
-      // Also update currentUser if the updated user is the one logged in
-      if (this.currentUser()?.username === updatedUser.username) {
-          this.currentUser.set(updatedUser); 
-      }
+    const currentUsers = this.usersSignal();
+    const updatedUsers = currentUsers.map(u =>
+      u.username === updatedUser.username ? { ...updatedUser } : u
+    );
+
+    this.persist(updatedUsers);
+
+    // Also update currentUser if the updated user is the one logged in
+    if (this.currentUser()?.username === updatedUser.username) {
+        this.currentUser.set({ ...updatedUser });
     }
   }
 

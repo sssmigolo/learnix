@@ -26,8 +26,10 @@ export class UserService {
   addXp(amount: number) {
     const user = this.auth.currentUser();
     if (user) {
-      user.xp += amount;
-      this.auth.updateUser(user);
+      this.auth.updateUser({
+        ...user,
+        xp: user.xp + amount
+      });
     }
   }
 
@@ -43,8 +45,10 @@ export class UserService {
               totalQuestions: total,
               xpEarned: xp
           };
-          user.history.unshift(record); // Add to front
-          this.auth.updateUser(user);
+          this.auth.updateUser({
+            ...user,
+            history: [record, ...user.history]
+          });
       }
   }
 
@@ -53,14 +57,14 @@ export class UserService {
     if (!user) return;
 
     let questsUpdated = false;
+    let extraXp = 0;
     const newQuests = user.quests.map(q => {
         if (q.id === questId && !q.completed) {
           const newProgress = Math.min(q.progress + amount, q.total);
           const isCompleted = newProgress === q.total;
           
-          if (isCompleted && !q.completed) {
-             // Reward XP immediately
-             user.xp += q.xpReward;
+          if (isCompleted) {
+             extraXp += q.xpReward;
           }
           questsUpdated = true;
           return { ...q, progress: newProgress, completed: isCompleted };
@@ -69,8 +73,11 @@ export class UserService {
     });
 
     if (questsUpdated) {
-        user.quests = newQuests;
-        this.auth.updateUser(user);
+        this.auth.updateUser({
+            ...user,
+            quests: newQuests,
+            xp: user.xp + extraXp
+        });
     }
   }
 }

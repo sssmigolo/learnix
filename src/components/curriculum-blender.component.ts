@@ -21,7 +21,8 @@ import { GeminiService } from '../services/gemini.service';
             <label class="text-sm font-medium mb-1 opacity-80">Topic</label>
             <input 
               type="text" 
-              [(ngModel)]="topic" 
+              [ngModel]="topic()"
+              (ngModelChange)="topic.set($event)"
               placeholder="e.g. Photosynthesis, WW2, Algebra"
               class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-flash-accent placeholder-gray-400 backdrop-blur-sm transition-all"
             />
@@ -30,7 +31,8 @@ import { GeminiService } from '../services/gemini.service';
             <label class="text-sm font-medium mb-1 opacity-80">Local Curriculum</label>
             <input 
               type="text" 
-              [(ngModel)]="localRegion" 
+              [ngModel]="localRegion()"
+              (ngModelChange)="localRegion.set($event)"
               placeholder="e.g. California State, CBSE India"
               class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-flash-accent placeholder-gray-400 backdrop-blur-sm transition-all"
             />
@@ -39,7 +41,8 @@ import { GeminiService } from '../services/gemini.service';
             <label class="text-sm font-medium mb-1 opacity-80">Intl. Standard</label>
             <input 
               type="text" 
-              [(ngModel)]="intlStandard" 
+              [ngModel]="intlStandard()"
+              (ngModelChange)="intlStandard.set($event)"
               placeholder="e.g. IB, Cambridge IGCSE"
               class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-flash-accent placeholder-gray-400 backdrop-blur-sm transition-all"
             />
@@ -49,7 +52,7 @@ import { GeminiService } from '../services/gemini.service';
         <div class="flex justify-end">
           <button 
             (click)="generateBlend()" 
-            [disabled]="isLoading() || !topic"
+            [disabled]="isLoading() || !topic()"
             class="px-6 py-2 rounded-full font-semibold bg-flash-accent text-gray-900 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
           >
             @if (isLoading()) {
@@ -204,9 +207,9 @@ export class CurriculumBlenderComponent {
   onStartBlendedLesson = output<{topic: string, domain: string}>();
   
   // Inputs
-  topic = '';
-  localRegion = '';
-  intlStandard = '';
+  topic = signal('');
+  localRegion = signal('');
+  intlStandard = signal('');
   
   // State
   isLoading = signal(false);
@@ -251,7 +254,7 @@ export class CurriculumBlenderComponent {
   }
 
   async generateBlend() {
-    if (!this.topic) return;
+    if (!this.topic()) return;
     
     this.isLoading.set(true);
     this.result.set(null);
@@ -260,9 +263,9 @@ export class CurriculumBlenderComponent {
 
     try {
       const data = await this.geminiService.blendCurriculum(
-        this.topic, 
-        this.localRegion || 'General Local Curriculum', 
-        this.intlStandard || 'International Standard'
+        this.topic(),
+        this.localRegion() || 'General Local Curriculum',
+        this.intlStandard() || 'International Standard'
       );
       this.result.set(data);
     } catch (e: any) {
@@ -275,8 +278,8 @@ export class CurriculumBlenderComponent {
   launchLesson() {
       if(!this.result()) return;
       // Pass a specific blended string to the lesson generator
-      const blendedTopic = `${this.topic} (Blending ${this.result().localPerspective.focus} with ${this.result().internationalPerspective.focus})`;
-      const domain = `Integrated Curriculum: ${this.localRegion} & ${this.intlStandard}`;
+      const blendedTopic = `${this.topic()} (Blending ${this.result().localPerspective.focus} with ${this.result().internationalPerspective.focus})`;
+      const domain = `Integrated Curriculum: ${this.localRegion()} & ${this.intlStandard()}`;
       this.onStartBlendedLesson.emit({ topic: blendedTopic, domain });
   }
 

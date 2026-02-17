@@ -9,7 +9,8 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    const apiKey = process.env['GEMINI_API_KEY'] || process.env['API_KEY'] || (globalThis as any).GEMINI_API_KEY || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   private handleError(e: any, context: string): Error {
@@ -22,29 +23,32 @@ export class GeminiService {
     if (errorDetails?.status) {
         switch (errorDetails.status) {
             case 'RESOURCE_EXHAUSTED':
-                return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
+                return new Error('The AI is currently busy (Rate Limit Exceeded). Please wait 30-60 seconds and try again.');
             case 'PERMISSION_DENIED':
-                return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
-            case 'UNKNOWN': // This covers 500 errors like the one reported
+                return new Error('Invalid API Key or Permission Denied. Please check your AI configuration.');
+            case 'INTERNAL':
+            case 'UNKNOWN':
                 return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
+            case 'INVALID_ARGUMENT':
+                return new Error(`Invalid request to the AI model: ${errorDetails.message || 'Check your inputs'}.`);
         }
     }
 
     // Fallback checks on the raw message if the status isn't available
     const errorMessage = (errorDetails?.message || e?.message || '').toString().toLowerCase();
 
-    if (errorMessage.includes('429') || errorMessage.includes('resource_exhausted')) {
-        return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
+    if (errorMessage.includes('429') || errorMessage.includes('resource_exhausted') || errorMessage.includes('rate limit')) {
+        return new Error('The AI is currently busy (Rate Limit Exceeded). Please wait 30-60 seconds and try again.');
     }
-    if (errorMessage.includes('403') || errorMessage.includes('permission_denied')) {
-        return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
+    if (errorMessage.includes('403') || errorMessage.includes('permission_denied') || errorMessage.includes('api key')) {
+        return new Error('Invalid API Key or Permission Denied. Please check your AI configuration.');
     }
-    if (errorMessage.includes('500') || errorMessage.includes('xhr error') || errorMessage.includes('internal error')) {
-        return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
+    if (errorMessage.includes('500') || errorMessage.includes('503') || errorMessage.includes('internal error') || errorMessage.includes('unavailable')) {
+        return new Error('The AI service is temporarily unavailable or experienced an internal error. Please try again.');
     }
     
     // Final generic fallback
-    return new Error(`Could not ${context}. The AI model might be unavailable or an unknown error occurred.`);
+    return new Error(`Could not ${context}. The AI model might be unavailable or an unknown error occurred. (${errorMessage.substring(0, 50)}...)`);
   }
 
   // Generates a Brilliant-style interactive lesson
