@@ -240,7 +240,8 @@ declare var hljs: any;
                                             
                                             <!-- Actual textarea (on top) -->
                                             <textarea 
-                                                [(ngModel)]="userCode"
+                                                [ngModel]="userCode()"
+                                                (ngModelChange)="userCode.set($event)"
                                                 (scroll)="syncScroll($event)"
                                                 spellcheck="false"
                                                 class="editor-textarea absolute inset-0 w-full h-40 bg-transparent text-transparent caret-white font-mono text-sm p-4 rounded-xl border-transparent focus:outline-none focus:border-flash-accent focus:ring-1 focus:ring-flash-accent resize-none leading-relaxed overflow-auto custom-scrollbar"
@@ -444,12 +445,13 @@ declare var hljs: any;
                     
                     <input 
                         type="text" 
-                        [(ngModel)]="chatInput"
+                        [ngModel]="chatInput()"
+                        (ngModelChange)="chatInput.set($event)"
                         (keyup.enter)="sendMessage()"
                         [placeholder]="isListening() ? 'Listening...' : 'Ask a question...'" 
                         class="flex-1 bg-white/5 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-flash-primary"
                     >
-                    <button (click)="sendMessage()" [disabled]="!chatInput || isChatLoading()" class="p-2 bg-flash-primary rounded-xl disabled:opacity-50">
+                    <button (click)="sendMessage()" [disabled]="!chatInput() || isChatLoading()" class="p-2 bg-flash-primary rounded-xl disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>
@@ -551,7 +553,7 @@ export class LessonViewerComponent implements OnDestroy {
 
   // Chat State
   showChat = signal(false);
-  chatInput = '';
+  chatInput = signal('');
   chatMessages = signal<{role: 'user' | 'model', text: string}[]>([{role: 'model', text: 'Hi! I\'m your AI tutor. Stuck on a concept? Ask me anything!'}]);
   isChatLoading = signal(false);
   isListening = signal(false);
@@ -665,7 +667,7 @@ export class LessonViewerComponent implements OnDestroy {
 
             this.recognition.onresult = (event: any) => {
                 const transcript = event.results[0][0].transcript;
-                this.chatInput = transcript;
+                this.chatInput.set(transcript);
                 this.isListening.set(false);
             };
             
@@ -782,10 +784,10 @@ export class LessonViewerComponent implements OnDestroy {
   }
 
   async sendMessage() {
-      if (!this.chatInput.trim() || !this.chatSession) return;
+      if (!this.chatInput().trim() || !this.chatSession) return;
       
-      const msg = this.chatInput;
-      this.chatInput = '';
+      const msg = this.chatInput();
+      this.chatInput.set('');
       this.chatMessages.update(m => [...m, {role: 'user', text: msg}]);
       this.isChatLoading.set(true);
       this.scrollToBottom();

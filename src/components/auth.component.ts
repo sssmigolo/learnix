@@ -27,12 +27,28 @@ import { AuthService } from '../services/auth.service';
         <form (submit)="onSubmit()" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1">Username / Email</label>
-                <input type="text" [(ngModel)]="username" name="username" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="Enter username" required>
+                <input
+                    type="text"
+                    [ngModel]="username()"
+                    (ngModelChange)="username.set($event)"
+                    name="username"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors"
+                    placeholder="Enter username"
+                    required
+                >
             </div>
             
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1">Password</label>
-                <input type="password" [(ngModel)]="password" name="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="••••••••" required>
+                <input
+                    type="password"
+                    [ngModel]="password()"
+                    (ngModelChange)="password.set($event)"
+                    name="password"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors"
+                    placeholder="••••••••"
+                    required
+                >
             </div>
 
             @if (error()) {
@@ -41,8 +57,20 @@ import { AuthService } from '../services/auth.service';
                 </div>
             }
 
-            <button type="submit" class="w-full bg-gradient-to-r from-flash-primary to-blue-600 py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
-                {{ mode() === 'login' ? 'Log In' : 'Create Account' }}
+            <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="w-full bg-gradient-to-r from-flash-primary to-blue-600 py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+                @if (isSubmitting()) {
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Processing...</span>
+                } @else {
+                    {{ mode() === 'login' ? 'Log In' : 'Create Account' }}
+                }
             </button>
         </form>
 
@@ -74,16 +102,24 @@ export class AuthComponent {
   authService = inject(AuthService);
   mode = signal<'login' | 'signup'>('login');
   
-  username = '';
-  password = '';
+  username = signal('');
+  password = signal('');
   error = signal('');
+  isSubmitting = signal(false);
 
-  onSubmit() {
+  async onSubmit() {
     this.error.set('');
     
     // Trim whitespace from inputs to prevent login issues
-    const username = this.username.trim();
-    const password = this.password.trim();
+    const username = this.username().trim();
+    const password = this.password().trim();
+
+    if (!username || !password) {
+        this.error.set('Please enter both username and password.');
+        return;
+    }
+
+    this.isSubmitting.set(true);
 
     if (this.mode() === 'login') {
         const success = this.authService.login(username, password);
@@ -92,6 +128,8 @@ export class AuthComponent {
         const success = this.authService.signup(username, password);
         if (!success) this.error.set('Username already exists.');
     }
+
+    this.isSubmitting.set(false);
   }
 
   googleLogin() {

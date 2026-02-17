@@ -1,4 +1,4 @@
-import { Component, input, output, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../services/user.service';
@@ -67,8 +67,17 @@ import { AuthService } from '../services/auth.service';
 
             <!-- User Registry Table -->
             <div [class]="'rounded-3xl border overflow-hidden ' + (darkMode() ? 'bg-white/5 border-white/10' : 'bg-white/40 border-white/20')">
-                <div class="px-6 py-4 border-b border-white/10 bg-white/5">
+                <div class="px-6 py-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
                     <h3 class="font-bold text-sm uppercase tracking-wider">User Registry</h3>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            [ngModel]="userSearch()"
+                            (ngModelChange)="userSearch.set($event)"
+                            placeholder="Search users..."
+                            class="text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1 focus:outline-none focus:ring-1 focus:ring-flash-primary w-40 md:w-64"
+                        >
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -83,7 +92,7 @@ import { AuthService } from '../services/auth.service';
                             </tr>
                         </thead>
                         <tbody class="text-sm">
-                            @for (user of authService.allUsers(); track user.username) {
+                            @for (user of filteredUsers(); track user.username) {
                                 <tr [class]="'border-b border-white/5 hover:bg-white/5 transition-colors ' + (user.username === authService.currentUser()?.username ? 'bg-blue-500/10' : '')">
                                     <td class="px-6 py-3 font-medium flex items-center gap-2">
                                         <div class="w-6 h-6 rounded-full overflow-hidden bg-gray-500">
@@ -125,14 +134,15 @@ import { AuthService } from '../services/auth.service';
                 </div>
                 <input 
                     type="text" 
-                    [(ngModel)]="customTopic"
+                    [ngModel]="customTopic()"
+                    (ngModelChange)="customTopic.set($event)"
                     (keyup.enter)="startCustomLesson()"
                     placeholder="What do you want to master today? (e.g. 'Calculus', 'Photosynthesis')"
                     class="w-full bg-transparent border-none focus:outline-none p-2 placeholder-gray-400 font-medium"
                 >
                 <button 
                 (click)="startCustomLesson()"
-                [disabled]="!customTopic"
+                [disabled]="!customTopic()"
                 class="px-6 py-2 rounded-xl bg-flash-primary text-white font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Go
@@ -315,8 +325,16 @@ export class DashboardComponent {
   onStartLesson = output<{topic: string, domain: string}>();
   onOpenBlender = output<void>();
   
-  customTopic = '';
+  customTopic = signal('');
   viewMode = signal<'paths' | 'history'>('paths');
+  userSearch = signal('');
+
+  filteredUsers = computed(() => {
+    const search = this.userSearch().toLowerCase();
+    const allUsers = this.authService.allUsers();
+    if (!search) return allUsers;
+    return allUsers.filter(u => u.username.toLowerCase().includes(search));
+  });
 
   paths = [
     {
@@ -374,7 +392,7 @@ export class DashboardComponent {
   }
 
   startCustomLesson() {
-    if(!this.customTopic) return;
-    this.onStartLesson.emit({ topic: this.customTopic, domain: 'General Knowledge' });
+    if(!this.customTopic()) return;
+    this.onStartLesson.emit({ topic: this.customTopic(), domain: 'General Knowledge' });
   }
 }
