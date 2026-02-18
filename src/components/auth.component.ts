@@ -27,12 +27,12 @@ import { AuthService } from '../services/auth.service';
         <form (submit)="onSubmit()" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1">Username / Email</label>
-                <input type="text" [(ngModel)]="username" name="username" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="Enter username" required>
+                <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)" name="username" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="Enter username" required>
             </div>
             
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1">Password</label>
-                <input type="password" [(ngModel)]="password" name="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="••••••••" required>
+                <input type="password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-flash-primary transition-colors" placeholder="••••••••" required>
             </div>
 
             @if (error()) {
@@ -74,16 +74,16 @@ export class AuthComponent {
   authService = inject(AuthService);
   mode = signal<'login' | 'signup'>('login');
   
-  username = '';
-  password = '';
+  username = signal('');
+  password = signal('');
   error = signal('');
 
   onSubmit() {
     this.error.set('');
     
     // Trim whitespace from inputs to prevent login issues
-    const username = this.username.trim();
-    const password = this.password.trim();
+    const username = this.username().trim();
+    const password = this.password().trim();
 
     if (this.mode() === 'login') {
         const success = this.authService.login(username, password);

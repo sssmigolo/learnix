@@ -26,26 +26,30 @@ export class UserService {
   addXp(amount: number) {
     const user = this.auth.currentUser();
     if (user) {
-      user.xp += amount;
-      this.auth.updateUser(user);
+      this.auth.updateUser({
+        ...user,
+        xp: (user.xp || 0) + amount
+      });
     }
   }
 
   recordLesson(topic: string, domain: string, score: number, total: number, xp: number) {
-      const user = this.auth.currentUser();
-      if (user) {
-          const record: LessonRecord = {
-              id: crypto.randomUUID(),
-              topic,
-              domain,
-              date: Date.now(),
-              score,
-              totalQuestions: total,
-              xpEarned: xp
-          };
-          user.history.unshift(record); // Add to front
-          this.auth.updateUser(user);
-      }
+    const user = this.auth.currentUser();
+    if (user) {
+      const record: LessonRecord = {
+        id: crypto.randomUUID(),
+        topic,
+        domain,
+        date: Date.now(),
+        score,
+        totalQuestions: total,
+        xpEarned: xp
+      };
+      this.auth.updateUser({
+        ...user,
+        history: [record, ...user.history]
+      });
+    }
   }
 
   updateQuestProgress(questId: number, amount: number = 1) {
@@ -53,24 +57,27 @@ export class UserService {
     if (!user) return;
 
     let questsUpdated = false;
+    let xpReward = 0;
     const newQuests = user.quests.map(q => {
-        if (q.id === questId && !q.completed) {
-          const newProgress = Math.min(q.progress + amount, q.total);
-          const isCompleted = newProgress === q.total;
-          
-          if (isCompleted && !q.completed) {
-             // Reward XP immediately
-             user.xp += q.xpReward;
-          }
-          questsUpdated = true;
-          return { ...q, progress: newProgress, completed: isCompleted };
+      if (q.id === questId && !q.completed) {
+        const newProgress = Math.min(q.progress + amount, q.total);
+        const isCompleted = newProgress === q.total;
+
+        if (isCompleted) {
+          xpReward += q.xpReward;
         }
-        return q;
+        questsUpdated = true;
+        return { ...q, progress: newProgress, completed: isCompleted };
+      }
+      return q;
     });
 
     if (questsUpdated) {
-        user.quests = newQuests;
-        this.auth.updateUser(user);
+      this.auth.updateUser({
+        ...user,
+        quests: newQuests,
+        xp: user.xp + xpReward
+      });
     }
   }
 }

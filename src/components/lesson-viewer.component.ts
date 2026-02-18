@@ -444,7 +444,8 @@ declare var hljs: any;
                     
                     <input 
                         type="text" 
-                        [(ngModel)]="chatInput"
+                        [ngModel]="chatInput()"
+                        (ngModelChange)="chatInput.set($event)"
                         (keyup.enter)="sendMessage()"
                         [placeholder]="isListening() ? 'Listening...' : 'Ask a question...'" 
                         class="flex-1 bg-white/5 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-flash-primary"
@@ -551,7 +552,7 @@ export class LessonViewerComponent implements OnDestroy {
 
   // Chat State
   showChat = signal(false);
-  chatInput = '';
+  chatInput = signal('');
   chatMessages = signal<{role: 'user' | 'model', text: string}[]>([{role: 'model', text: 'Hi! I\'m your AI tutor. Stuck on a concept? Ask me anything!'}]);
   isChatLoading = signal(false);
   isListening = signal(false);
@@ -665,7 +666,7 @@ export class LessonViewerComponent implements OnDestroy {
 
             this.recognition.onresult = (event: any) => {
                 const transcript = event.results[0][0].transcript;
-                this.chatInput = transcript;
+                this.chatInput.set(transcript);
                 this.isListening.set(false);
             };
             
@@ -782,10 +783,11 @@ export class LessonViewerComponent implements OnDestroy {
   }
 
   async sendMessage() {
-      if (!this.chatInput.trim() || !this.chatSession) return;
+      const input = this.chatInput().trim();
+      if (!input || !this.chatSession) return;
       
-      const msg = this.chatInput;
-      this.chatInput = '';
+      const msg = input;
+      this.chatInput.set('');
       this.chatMessages.update(m => [...m, {role: 'user', text: msg}]);
       this.isChatLoading.set(true);
       this.scrollToBottom();
@@ -983,9 +985,13 @@ export class LessonViewerComponent implements OnDestroy {
     const isCorrect = optionIdx === quiz.correctIndex;
 
     this.miniQuizState.update(current => {
-        const newState = JSON.parse(JSON.stringify(current)); // simple deep copy
-        newState[cIdx][qIdx] = { selected: optionIdx, correct: isCorrect };
-        return newState;
+        return {
+            ...current,
+            [cIdx]: {
+                ...current[cIdx],
+                [qIdx]: { selected: optionIdx, correct: isCorrect }
+            }
+        };
     });
 
     if (isCorrect) {
