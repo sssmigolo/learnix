@@ -9,7 +9,8 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    const apiKey = (typeof process !== 'undefined' ? process.env['GEMINI_API_KEY'] || process.env['API_KEY'] : null) || (globalThis as any).GEMINI_API_KEY || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   private handleError(e: any, context: string): Error {

@@ -125,14 +125,15 @@ import { AuthService } from '../services/auth.service';
                 </div>
                 <input 
                     type="text" 
-                    [(ngModel)]="customTopic"
+                    [ngModel]="customTopic()"
+                    (ngModelChange)="customTopic.set($event)"
                     (keyup.enter)="startCustomLesson()"
                     placeholder="What do you want to master today? (e.g. 'Calculus', 'Photosynthesis')"
                     class="w-full bg-transparent border-none focus:outline-none p-2 placeholder-gray-400 font-medium"
                 >
                 <button 
                 (click)="startCustomLesson()"
-                [disabled]="!customTopic"
+                [disabled]="!customTopic()"
                 class="px-6 py-2 rounded-xl bg-flash-primary text-white font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Go
@@ -315,7 +316,7 @@ export class DashboardComponent {
   onStartLesson = output<{topic: string, domain: string}>();
   onOpenBlender = output<void>();
   
-  customTopic = '';
+  customTopic = signal('');
   viewMode = signal<'paths' | 'history'>('paths');
 
   paths = [
@@ -374,7 +375,9 @@ export class DashboardComponent {
   }
 
   startCustomLesson() {
-    if(!this.customTopic) return;
-    this.onStartLesson.emit({ topic: this.customTopic, domain: 'General Knowledge' });
+    const topic = this.customTopic();
+    if(!topic) return;
+    this.onStartLesson.emit({ topic, domain: 'General Knowledge' });
+    this.customTopic.set('');
   }
 }
