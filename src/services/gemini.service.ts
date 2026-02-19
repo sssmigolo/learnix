@@ -14,36 +14,58 @@ export class GeminiService {
 
   private handleError(e: any, context: string): Error {
     console.error(`Error in ${context}:`, e);
-    
-    // The actual error details might be nested inside an 'error' property.
-    const errorDetails = e?.error || e;
 
-    // Check for specific statuses from the Gemini API error object
-    if (errorDetails?.status) {
-        switch (errorDetails.status) {
-            case 'RESOURCE_EXHAUSTED':
-                return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
-            case 'PERMISSION_DENIED':
-                return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
-            case 'UNKNOWN': // This covers 500 errors like the one reported
-                return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
+    // Helper to recursively find the deepest 'error' object and parse JSON messages
+    const getErrorDetails = (err: any): any => {
+        if (!err) return null;
+        // If there's a nested error property, go deeper
+        if (err.error) return getErrorDetails(err.error);
+        
+        // Sometimes the message field itself contains a JSON string
+        if (typeof err.message === 'string') {
+            try {
+                const parsed = JSON.parse(err.message);
+                // If the parsed message has its own error object, recurse again
+                if (parsed.error) return getErrorDetails(parsed.error);
+                return parsed;
+            } catch (parseError) {
+                // It's not a JSON string, so we'll treat `err` as the details object
+            }
         }
+        return err;
+    };
+
+    const details = getErrorDetails(e) || {};
+    const status = details.status || '';
+    const message = (details.message || e.message || '').toString().toLowerCase();
+
+    // Handle errors based on the standardized status code first
+    switch (status) {
+        case 'RESOURCE_EXHAUSTED':
+            return new Error('You\'ve made too many requests. Please wait a moment and try again.');
+        case 'PERMISSION_DENIED':
+            return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
+        case 'INVALID_ARGUMENT':
+             return new Error('Invalid request. Please check if your API key is configured correctly.');
+        case 'UNKNOWN':
+            return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
     }
 
-    // Fallback checks on the raw message if the status isn't available
-    const errorMessage = (errorDetails?.message || e?.message || '').toString().toLowerCase();
-
-    if (errorMessage.includes('429') || errorMessage.includes('resource_exhausted')) {
-        return new Error('You\'ve made too many requests (rate limited). Please wait a moment and try again.');
+    // Fallback to checking string content if status is not available or unrecognized
+    if (message.includes('429') || message.includes('quota') || message.includes('resource_exhausted')) {
+        return new Error('You\'ve made too many requests. Please wait a moment and try again.');
     }
-    if (errorMessage.includes('403') || errorMessage.includes('permission_denied')) {
+    if (message.includes('403') || message.includes('permission_denied')) {
         return new Error('API key permission denied. Please check your key\'s configuration for the required model.');
     }
-    if (errorMessage.includes('500') || errorMessage.includes('xhr error') || errorMessage.includes('internal error')) {
+    if (message.includes('api key not valid')) {
+        return new Error('Your API key is not valid. Please check your configuration.');
+    }
+    if (message.includes('500') || message.includes('xhr error') || message.includes('internal error')) {
         return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
     }
     
-    // Final generic fallback
+    // Final generic fallback for any other error
     return new Error(`Could not ${context}. The AI model might be unavailable or an unknown error occurred.`);
   }
 

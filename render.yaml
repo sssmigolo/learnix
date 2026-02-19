@@ -1,0 +1,9 @@
+services:
+  - type: static_site
+    name: learnix
+    env: node
+    buildCommand: "npm install && npm run build"
+    publishDir: "./dist/learnix/browser"
+    envVars:
+      - key: API_KEY
+        sync: false

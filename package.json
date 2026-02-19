@@ -1,29 +1,27 @@
 {
   "name": "learnix",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "ng serve",
+    "ng": "ng",
+    "start": "ng serve",
     "build": "ng build",
-    "preview": "ng serve --configuration=production"
+    "watch": "ng build --watch --configuration development"
   },
+  "private": true,
   "dependencies": {
-    "rxjs": "^7.8.2",
+    "@angular/common": "^18.0.0",
+    "@angular/compiler": "^18.0.0",
+    "@angular/core": "^18.0.0",
+    "@angular/forms": "^18.0.0",
+    "@angular/platform-browser": "^18.0.0",
     "@google/genai": "^1.38.0",
-    "@angular/common": "^21.1.0",
-    "@angular/forms": "^21.1.1",
-    "@angular/platform-browser": "^21.1.0",
-    "@angular/compiler": "^21.1.0",
-    "@angular/core": "^21.1.0",
-    "@angular/build": "^21.1.0",
-    "@angular/cli": "^21.1.0",
-    "@angular/compiler-cli": "^21.1.0",
-    "tailwindcss": "latest"
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@angular/cli": "^18.0.1",
+    "@angular/compiler-cli": "^18.0.0",
+    "@types/node": "^18.18.0",
+    "typescript": "~5.4.2"
   }
 }
