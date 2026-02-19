@@ -163,7 +163,7 @@ export class GeminiService {
         }
       });
       
-      const jsonText = response.text.trim();
+      const jsonText = (response.text ?? '').trim();
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'generate lesson');
@@ -234,7 +234,7 @@ export class GeminiService {
           responseSchema: schema
         }
       });
-      const jsonText = response.text.trim();
+      const jsonText = (response.text ?? '').trim();
       return JSON.parse(jsonText);
     } catch (e) {
       throw this.handleError(e, 'blend curriculum');
@@ -303,7 +303,7 @@ export class GeminiService {
               responseSchema: schema
             }
         });
-        const jsonText = response.text.trim();
+        const jsonText = (response.text ?? '').trim();
         return JSON.parse(jsonText);
     } catch(e) {
         const error = this.handleError(e, 'evaluate code');
@@ -331,12 +331,14 @@ export class GeminiService {
         },
       });
 
-      if (response.generatedImages && response.generatedImages.length > 0) {
-        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+      const base64ImageBytes = response.generatedImages?.[0]?.image?.imageBytes;
+      if (base64ImageBytes) {
         const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
         this.imageCache.set(prompt, imageUrl);
         return imageUrl;
       }
+      
+      // Fallback if image data is not in the expected structure
       return 'https://picsum.photos/seed/fallback/600/600';
     } catch (e) {
       const error = this.handleError(e, 'generate image');

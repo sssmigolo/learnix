@@ -124,17 +124,17 @@ declare var hljs: any;
                                                         @for(option of quiz.options; track $index; let oIdx = $index) {
                                                             <button 
                                                                 (click)="selectMiniQuizOption(cIdx, qIdx, oIdx)"
-                                                                [disabled]="miniQuizState()[cIdx]?.[qIdx]?.selected !== null"
+                                                                [disabled]="miniQuizState()[cIdx][qIdx].selected !== null"
                                                                 [class]="getMiniQuizOptionClass(cIdx, qIdx, oIdx)"
                                                             >
                                                                 <span class="flex-1 pr-2">{{ option }}</span>
-                                                                @if (miniQuizState()[cIdx]?.[qIdx]?.selected !== null) {
+                                                                @if (miniQuizState()[cIdx][qIdx].selected !== null) {
                                                                     @if (oIdx === quiz.correctIndex) {
                                                                         <!-- Correct answer icon -->
                                                                         <div class="w-5 h-5 flex items-center justify-center rounded-full bg-green-500 text-white shrink-0">
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                                                         </div>
-                                                                    } @else if (oIdx === miniQuizState()[cIdx]?.[qIdx]?.selected) {
+                                                                    } @else if (oIdx === miniQuizState()[cIdx][qIdx].selected) {
                                                                         <!-- Incorrect selected answer icon -->
                                                                         <div class="w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white shrink-0">
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -146,7 +146,7 @@ declare var hljs: any;
                                                     </div>
 
                                                     <!-- Feedback text -->
-                                                    @if (miniQuizState()[cIdx]?.[qIdx]?.selected !== null) {
+                                                    @if (miniQuizState()[cIdx][qIdx].selected !== null) {
                                                         @let quizState = miniQuizState()[cIdx][qIdx];
                                                         <div class="mt-3 text-sm p-3 rounded-lg animate-fade-in flex items-start gap-2"
                                                             [class]="quizState.correct ? 'bg-green-500/10 text-green-300 border border-green-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'">
@@ -592,7 +592,7 @@ export class LessonViewerComponent implements OnDestroy {
 
   allMiniQuizzesCompleted = computed(() => {
     if (!this.lessonData()) return false;
-    return this.areMiniQuizzesCompleteForConcept().every(status => status);
+    return this.areMiniQuizzesCompleteForConcept().every((status: boolean) => status);
   });
 
   constructor() {
