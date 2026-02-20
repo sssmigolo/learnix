@@ -10,6 +10,7 @@
     "index.tsx"
   ],
   "include": [
+    "src/**/*.ts",
     "src/**/*.d.ts"
   ]
 }
