@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 
 export interface LessonRecord {
   id: string;
@@ -12,7 +12,7 @@ export interface LessonRecord {
 
 export interface User {
   username: string;
-  password?: string; // Optional for google users
+  password?: string;
   isGoogle?: boolean;
   isAdmin?: boolean;
   xp: number;
@@ -26,19 +26,15 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  // "Backend" State is now fully in-memory
   private usersSignal = signal<User[]>([]); 
   currentUser = signal<User | null>(null);
 
-  // Computed Backend Views
   leaderboard = computed(() => {
-      // Return Top 5 Users by XP
       return [...this.usersSignal()]
         .sort((a, b) => (b.xp || 0) - (a.xp || 0))
         .slice(0, 5);
   });
   
-  // Admin View: All Users
   allUsers = computed(() => {
       return [...this.usersSignal()].sort((a, b) => b.lastLogin - a.lastLogin);
   });
@@ -55,17 +51,14 @@ export class AuthService {
   
   constructor() {
     this.initDatabase();
-    // No session to restore from localStorage
   }
 
-  // Utility to calculate level globally
   getLevel(xp: number): number {
     if (!xp || xp === 0) return 1;
     return Math.floor(0.1 * Math.sqrt(xp)) + 1;
   }
 
   private initDatabase() {
-    // Seed Admin Account into the in-memory signal
     const users: User[] = [{
       username: 'admin',
       password: 'admin',
@@ -76,14 +69,11 @@ export class AuthService {
       quests: this.generateDailyQuests(),
       history: []
     }];
-    
-    // Initialize state
     this.usersSignal.set(users);
   }
 
-  // Persist now only updates the in-memory signal
   private persist(users: User[]) {
-    this.usersSignal.set(users);
+    this.usersSignal.set([...users]);
   }
 
   login(username: string, password?: string): boolean {
@@ -91,17 +81,17 @@ export class AuthService {
     const user = users.find(u => u.username === username);
 
     if (user && user.password === password) {
-      this.currentUser.set(user);
-      this.checkStreak(user);
+      this.currentUser.set({ ...user });
+      this.checkStreak({ ...user });
       return true;
     }
     return false;
   }
 
   signup(username: string, password?: string, isGoogle = false): boolean {
-    const users = [...this.usersSignal()];
+    const users = this.usersSignal();
     if (users.find(u => u.username === username)) {
-      return false; // User exists
+      return false;
     }
 
     const newUser: User = {
@@ -116,10 +106,8 @@ export class AuthService {
       history: []
     };
 
-    users.push(newUser);
-    this.persist(users);
-    
-    this.currentUser.set(newUser);
+    this.persist([...users, newUser]);
+    this.currentUser.set({ ...newUser });
     return true;
   }
 
@@ -128,8 +116,8 @@ export class AuthService {
     const user = users.find(u => u.username === email);
     
     if (user) {
-      this.currentUser.set(user);
-      this.checkStreak(user);
+      this.currentUser.set({ ...user });
+      this.checkStreak({ ...user });
     } else {
       this.signup(email, undefined, true);
     }
@@ -140,39 +128,40 @@ export class AuthService {
   }
 
   updateUser(updatedUser: User) {
-    const users = [...this.usersSignal()];
-    const index = users.findIndex(u => u.username === updatedUser.username);
-    if (index !== -1) {
-      users[index] = updatedUser;
-      this.persist(users);
-      
-      // Also update currentUser if the updated user is the one logged in
-      if (this.currentUser()?.username === updatedUser.username) {
-          this.currentUser.set(updatedUser); 
-      }
+    this.usersSignal.update(users =>
+        users.map(u => u.username === updatedUser.username ? { ...updatedUser } : u)
+    );
+
+    if (this.currentUser()?.username === updatedUser.username) {
+        this.currentUser.set({ ...updatedUser });
     }
   }
 
   private checkStreak(user: User) {
     const lastLogin = new Date(user.lastLogin);
     const now = new Date();
-
     const lastLoginDate = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
     const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
     const diffTime = nowDate.getTime() - lastLoginDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+    let updatedStreak = user.streak;
+    let updatedQuests = user.quests;
+
     if (diffDays === 1) {
-      user.streak += 1;
-      user.quests = this.generateDailyQuests();
+      updatedStreak += 1;
+      updatedQuests = this.generateDailyQuests();
     } else if (diffDays > 1) {
-      user.streak = 1;
-      user.quests = this.generateDailyQuests();
+      updatedStreak = 1;
+      updatedQuests = this.generateDailyQuests();
     }
 
-    user.lastLogin = Date.now();
-    this.updateUser(user);
+    this.updateUser({
+        ...user,
+        streak: updatedStreak,
+        quests: updatedQuests,
+        lastLogin: Date.now()
+    });
   }
 
   private generateDailyQuests() {
