@@ -133,6 +133,7 @@ import { AuthService } from '../services/auth.service';
                 <button 
                 (click)="startCustomLesson()"
                 [disabled]="!customTopic"
+                aria-label="Start custom lesson"
                 class="px-6 py-2 rounded-xl bg-flash-primary text-white font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     Go
@@ -141,8 +142,12 @@ import { AuthService } from '../services/auth.service';
 
             <!-- View Toggle (Paths vs History) -->
             <div class="flex gap-4 border-b border-white/10 pb-2">
-                <button (click)="viewMode.set('paths')" [class]="'text-sm font-bold uppercase tracking-wide pb-2 border-b-2 transition-colors ' + (viewMode() === 'paths' ? 'border-flash-accent text-white' : 'border-transparent text-white/40 hover:text-white/70')">Learning Paths</button>
-                <button (click)="viewMode.set('history')" [class]="'text-sm font-bold uppercase tracking-wide pb-2 border-b-2 transition-colors ' + (viewMode() === 'history' ? 'border-flash-accent text-white' : 'border-transparent text-white/40 hover:text-white/70')">Lesson History</button>
+                <button (click)="viewMode.set('paths')"
+                    aria-label="View Learning Paths"
+                    [class]="'text-sm font-bold uppercase tracking-wide pb-2 border-b-2 transition-colors ' + (viewMode() === 'paths' ? 'border-flash-accent text-white' : 'border-transparent text-white/40 hover:text-white/70')">Learning Paths</button>
+                <button (click)="viewMode.set('history')"
+                    aria-label="View Lesson History"
+                    [class]="'text-sm font-bold uppercase tracking-wide pb-2 border-b-2 transition-colors ' + (viewMode() === 'history' ? 'border-flash-accent text-white' : 'border-transparent text-white/40 hover:text-white/70')">Lesson History</button>
             </div>
 
              <!-- Learning Paths -->
@@ -249,7 +254,10 @@ import { AuthService } from '../services/auth.service';
                     <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-4 text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 9.17-3.53-3.53"/><path d="m4.93 19.07 4.24-4.24"/></svg>
                     </div>
-                    <h3 class="text-lg font-bold mb-1">Curriculum Blender</h3>
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="text-lg font-bold">Curriculum Blender</h3>
+                        <span class="px-1.5 py-0.5 rounded-md bg-flash-accent text-[8px] font-black uppercase tracking-tighter animate-pulse">New</span>
+                    </div>
                     <p class="text-xs opacity-70 mb-0">Bridge local & global standards with AI.</p>
                  </div>
                  <div class="absolute -bottom-4 -right-4 w-24 h-24 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-colors"></div>
