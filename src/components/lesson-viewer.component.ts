@@ -20,7 +20,7 @@ declare var hljs: any;
       <!-- Top Bar: Progress & Lives -->
       @if (!error()) {
         <div class="flex items-center justify-between p-4 pb-0 z-10 relative">
-          <button (click)="exitAndClearProgress()" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+          <button (click)="exitAndClearProgress()" aria-label="Exit lesson" class="p-2 rounded-full hover:bg-white/10 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
           
@@ -212,6 +212,7 @@ declare var hljs: any;
                                     <button 
                                         (click)="useHint()" 
                                         [disabled]="hintsAvailable() <= 0"
+                                        aria-label="Use hint"
                                         [class]="'text-xs font-bold flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border ' + (hintsAvailable() > 0 ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20 cursor-not-allowed')"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
@@ -394,6 +395,7 @@ declare var hljs: any;
       @if (lessonData() && !isLessonComplete()) {
           <button 
             (click)="toggleChat()"
+            aria-label="Open AI Tutor chat"
             class="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-flash-primary text-white shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-30"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -438,6 +440,7 @@ declare var hljs: any;
                         (click)="toggleListening()"
                         [class]="'p-2 rounded-xl transition-all ' + (isListening() ? 'bg-red-500 text-white animate-pulse' : 'bg-white/10 hover:bg-white/20 text-white/70')"
                         title="Use Microphone"
+                        aria-label="Use microphone for speech recognition"
                     >
                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                     </button>
@@ -449,7 +452,10 @@ declare var hljs: any;
                         [placeholder]="isListening() ? 'Listening...' : 'Ask a question...'" 
                         class="flex-1 bg-white/5 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-flash-primary"
                     >
-                    <button (click)="sendMessage()" [disabled]="!chatInput || isChatLoading()" class="p-2 bg-flash-primary rounded-xl disabled:opacity-50">
+                    <button (click)="sendMessage()"
+                        [disabled]="!chatInput || isChatLoading()"
+                        aria-label="Send message to AI Tutor"
+                        class="p-2 bg-flash-primary rounded-xl disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>

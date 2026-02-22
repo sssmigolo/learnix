@@ -163,16 +163,17 @@ export class AuthService {
     const diffTime = nowDate.getTime() - lastLoginDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+    let updatedUser = { ...user, lastLogin: Date.now() };
+
     if (diffDays === 1) {
-      user.streak += 1;
-      user.quests = this.generateDailyQuests();
+      updatedUser.streak += 1;
+      updatedUser.quests = this.generateDailyQuests();
     } else if (diffDays > 1) {
-      user.streak = 1;
-      user.quests = this.generateDailyQuests();
+      updatedUser.streak = 1;
+      updatedUser.quests = this.generateDailyQuests();
     }
 
-    user.lastLogin = Date.now();
-    this.updateUser(user);
+    this.updateUser(updatedUser);
   }
 
   private generateDailyQuests() {

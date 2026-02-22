@@ -9,7 +9,19 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    // Prefer GEMINI_API_KEY, fallback to API_KEY or globalThis.GEMINI_API_KEY
+    // Safely check for process.env in browser environments
+    let apiKey = '';
+    try {
+        apiKey = (globalThis as any).process?.env?.['GEMINI_API_KEY'] ||
+                 (globalThis as any).process?.env?.['API_KEY'] ||
+                 '';
+    } catch (e) {
+        // process.env is not available
+    }
+
+    const finalApiKey = apiKey || (globalThis as any).GEMINI_API_KEY || '';
+    this.ai = new GoogleGenAI({ apiKey: finalApiKey });
   }
 
   private handleError(e: any, context: string): Error {
@@ -163,8 +175,21 @@ export class GeminiService {
         }
       });
       
+      if (!response || !response.text) {
+          throw new Error('The AI returned an empty response.');
+      }
+
       const jsonText = (response.text ?? '').trim();
-      return JSON.parse(jsonText);
+      try {
+        const parsed = JSON.parse(jsonText);
+        // Additional safety: ensure core properties exist
+        if (!parsed.coreConcepts || !parsed.challenges) {
+             throw new Error('The AI returned a malformed lesson structure.');
+        }
+        return parsed;
+      } catch (parseError) {
+        throw new Error('The AI returned invalid JSON.');
+      }
     } catch (e) {
       throw this.handleError(e, 'generate lesson');
     }
@@ -234,8 +259,21 @@ export class GeminiService {
           responseSchema: schema
         }
       });
+
+      if (!response || !response.text) {
+        throw new Error('The AI returned an empty response.');
+      }
+
       const jsonText = (response.text ?? '').trim();
-      return JSON.parse(jsonText);
+      try {
+        const parsed = JSON.parse(jsonText);
+        if (!parsed.localPerspective || !parsed.blendedSummary) {
+             throw new Error('The AI returned a malformed curriculum blend.');
+        }
+        return parsed;
+      } catch (parseError) {
+        throw new Error('The AI returned invalid JSON.');
+      }
     } catch (e) {
       throw this.handleError(e, 'blend curriculum');
     }
