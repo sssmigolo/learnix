@@ -86,6 +86,7 @@
             (click)="toggleTheme()" 
             class="p-2 rounded-full transition-colors hover:bg-white/10 active:scale-95"
             [title]="isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+            [attr.aria-label]="isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
           >
             @if (isDarkMode()) {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-300"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>
@@ -105,7 +106,7 @@
                 <img [src]="authService.currentUser()?.isGoogle ? 'https://picsum.photos/seed/google/100/100' : 'https://picsum.photos/seed/' + authService.currentUser()?.username + '/100/100'" alt="User" class="w-full h-full object-cover">
              </div>
 
-             <button (click)="authService.logout()" class="p-2 text-red-400 hover:bg-red-500/10 rounded-full transition-colors" title="Logout">
+             <button (click)="authService.logout()" class="p-2 text-red-400 hover:bg-red-500/10 rounded-full transition-colors" title="Logout" aria-label="Logout">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
              </button>
           </div>

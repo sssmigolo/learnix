@@ -134,6 +134,7 @@ import { AuthService } from '../services/auth.service';
                 (click)="startCustomLesson()"
                 [disabled]="!customTopic"
                 class="px-6 py-2 rounded-xl bg-flash-primary text-white font-bold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Start custom lesson"
                 >
                     Go
                 </button>
@@ -167,6 +168,7 @@ import { AuthService } from '../services/auth.service';
                                         <button 
                                             (click)="startLesson(topic, path.title)"
                                             class="w-full text-left px-4 py-3 rounded-xl flex items-center justify-between group/btn hover:bg-white/10 transition-colors border border-white/5 hover:border-white/20"
+                                            [attr.aria-label]="'Start lesson on ' + topic"
                                         >
                                             <span class="font-medium text-sm">{{ topic }}</span>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 group-hover/btn:opacity-100 transform translate-x-[-10px] group-hover/btn:translate-x-0 transition-all text-flash-accent"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>

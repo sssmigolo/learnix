@@ -20,7 +20,7 @@ declare var hljs: any;
       <!-- Top Bar: Progress & Lives -->
       @if (!error()) {
         <div class="flex items-center justify-between p-4 pb-0 z-10 relative">
-          <button (click)="exitAndClearProgress()" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+          <button (click)="exitAndClearProgress()" class="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Exit lesson">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
           
@@ -213,6 +213,7 @@ declare var hljs: any;
                                         (click)="useHint()" 
                                         [disabled]="hintsAvailable() <= 0"
                                         [class]="'text-xs font-bold flex items-center gap-2 px-3 py-1.5 rounded-full transition-all border ' + (hintsAvailable() > 0 ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20 cursor-not-allowed')"
+                                        aria-label="Use hint"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
                                         {{ hintsAvailable() > 0 ? 'Use Hint (-1)' : 'No Hints Left' }}
@@ -252,6 +253,7 @@ declare var hljs: any;
                                                 (click)="showExample()"
                                                 [disabled]="exampleSolutionCooldown() > 0 || hasAnswered()"
                                                 class="flex-1 py-2 text-sm rounded-lg font-bold bg-yellow-600/50 text-yellow-300 hover:bg-yellow-600/70 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                                                aria-label="Show example solution"
                                               >
                                                 @if (exampleSolutionCooldown() > 0) {
                                                   <span>Show Example ({{ exampleSolutionCooldown() }}s)</span>
@@ -263,6 +265,7 @@ declare var hljs: any;
                                                 (click)="runCode()" 
                                                 [disabled]="isEvaluating() || hasAnswered()"
                                                 class="flex-1 py-2 rounded-lg font-bold bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                                                aria-label="Run code"
                                             >
                                                 @if(isEvaluating()) {
                                                     <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -349,6 +352,7 @@ declare var hljs: any;
                                 <button 
                                   (click)="nextChallenge()"
                                   class="w-full mt-6 py-3 rounded-xl font-bold bg-white text-black hover:bg-gray-100 transition-transform active:scale-95 shadow-lg"
+                                  [attr.aria-label]="currentChallengeIndex() === (lessonData()?.challenges?.length || 0) - 1 ? 'Finish Lesson' : 'Continue to next challenge'"
                                 >
                                   {{ currentChallengeIndex() === (lessonData()?.challenges?.length || 0) - 1 ? 'Finish Lesson' : 'Continue' }}
                                 </button>
