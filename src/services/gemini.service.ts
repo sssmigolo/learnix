@@ -9,7 +9,7 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    this.ai = new GoogleGenAI({ apiKey: ((globalThis as any).process?.env?.['GEMINI_API_KEY'] || (globalThis as any).process?.env?.['API_KEY'] || '') || '' });
   }
 
   private handleError(e: any, context: string): Error {
@@ -71,7 +71,7 @@ export class GeminiService {
 
   // Generates a Brilliant-style interactive lesson
   async generateInteractiveLesson(topic: string, domain: string) {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash';
     const prompt = `
       Create an engaging, gamified, and interactive lesson for the topic "${topic}" in the domain of "${domain}".
       The lesson should be structured to build understanding from the ground up.
@@ -171,7 +171,7 @@ export class GeminiService {
   }
   
   async blendCurriculum(topic: string, local: string, international: string) {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash';
     const prompt = `
       Analyze the topic "${topic}" from two educational perspectives:
       1. ${local} curriculum
@@ -242,7 +242,7 @@ export class GeminiService {
   }
 
   createTutorChat(topic: string, challengeContext: string, role?: string, challengeType?: string): Chat {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash';
     const systemInstruction = `
         You are "Learnix Tutor," a friendly and encouraging AI assistant for a gamified learning platform.
         Your goal is to help students understand concepts without giving away direct answers to challenges.
@@ -268,7 +268,7 @@ export class GeminiService {
   }
 
   async evaluateCode(code: string, problem: string): Promise<{ isCorrect: boolean; feedback: string; output: string }> {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash';
     const prompt = `
       You are a Python code interpreter and grader.
       The user was given this problem: "${problem}".
@@ -319,7 +319,7 @@ export class GeminiService {
     if (this.imageCache.has(prompt)) {
       return this.imageCache.get(prompt)!;
     }
-    const model = 'imagen-4.0-generate-001';
+    const model = 'imagen-3.0-generate-001';
     try {
       const response = await this.ai.models.generateImages({
         model: model,
