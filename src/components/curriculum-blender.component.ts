@@ -51,6 +51,7 @@ import { GeminiService } from '../services/gemini.service';
             (click)="generateBlend()" 
             [disabled]="isLoading() || !topic"
             class="px-6 py-2 rounded-full font-semibold bg-flash-accent text-gray-900 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+            aria-label="Blend and learn"
           >
             @if (isLoading()) {
               <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -94,6 +95,7 @@ import { GeminiService } from '../services/gemini.service';
                 <button 
                   (click)="launchLesson()"
                   class="px-6 py-2 bg-flash-primary text-white rounded-full font-bold shadow-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm"
+                  aria-label="Start interactive lesson"
                 >
                     <span>Start Interactive Lesson</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -162,7 +164,7 @@ import { GeminiService } from '../services/gemini.service';
                     <span [class]="isCorrect() ? 'text-green-400 font-bold' : 'text-red-400 font-bold'">
                       {{ isCorrect() ? 'Correct!' : 'Incorrect.' }}
                     </span>
-                    <button (click)="nextQuestion()" class="px-4 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors">
+                    <button (click)="nextQuestion()" class="px-4 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors" [attr.aria-label]="currentQuestionIndex() === result().quiz.length - 1 ? 'Finish quiz' : 'Next question'">
                       {{ currentQuestionIndex() === result().quiz.length - 1 ? 'Finish' : 'Next' }}
                     </button>
                   </div>
