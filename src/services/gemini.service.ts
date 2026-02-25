@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { GoogleGenAI, Type, Chat } from '@google/genai';
 
 /**
@@ -13,14 +13,28 @@ import { GoogleGenAI, Type, Chat } from '@google/genai';
   providedIn: 'root'
 })
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai!: GoogleGenAI;
   private imageCache = new Map<string, string>();
 
   // Using gemma-2-9b-it as a powerful, free, and open-weights alternative to proprietary models.
   private readonly LLM_MODEL = 'gemma-2-9b-it';
 
+  // Allow dynamic API key updates
+  apiKey = signal<string>(localStorage.getItem('user_gemini_api_key') || '');
+
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: ((globalThis as any).process?.env?.['GEMINI_API_KEY'] || (globalThis as any).process?.env?.['API_KEY'] || '') || '' });
+    this.initializeAI();
+  }
+
+  private initializeAI() {
+    const key = this.apiKey() || ((globalThis as any).process?.env?.['GEMINI_API_KEY'] || (globalThis as any).process?.env?.['API_KEY'] || '') || '';
+    this.ai = new GoogleGenAI({ apiKey: key });
+  }
+
+  setApiKey(key: string) {
+    this.apiKey.set(key);
+    localStorage.setItem('user_gemini_api_key', key);
+    this.initializeAI();
   }
 
   private handleError(e: any, context: string): Error {
