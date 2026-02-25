@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
+import { GeminiService } from '../services/gemini.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -214,7 +215,7 @@ import { AuthService } from '../services/auth.service';
         <!-- Right Column: Quests, Leaderboard & Tools -->
         <div class="flex flex-col gap-6">
             
-            <!-- Global Leaderboard (New Backend Feature) -->
+            <!-- Global Leaderboard -->
             <div [class]="'p-6 rounded-3xl ' + (darkMode() ? 'glass-dark' : 'glass')">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-lg flex items-center gap-2">
@@ -255,6 +256,34 @@ import { AuthService } from '../services/auth.service';
                  <div class="absolute -bottom-4 -right-4 w-24 h-24 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-colors"></div>
             </div>
 
+            <!-- API Key Settings (New Feature) -->
+            <div [class]="'p-6 rounded-3xl border transition-all ' + (darkMode() ? 'bg-white/5 border-white/10' : 'bg-white border-white/20 shadow-sm')">
+                <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z"/></svg>
+                    AI Configuration
+                </h3>
+                <div class="space-y-3">
+                    <div class="relative">
+                        <input
+                            [type]="showKey ? 'text' : 'password'"
+                            [(ngModel)]="tempApiKey"
+                            placeholder="Enter Gemini API Key"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-xs focus:ring-1 focus:ring-flash-primary focus:outline-none pr-8"
+                        >
+                        <button (click)="showKey = !showKey" class="absolute right-2 top-2 opacity-50 hover:opacity-100">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                    <button
+                        (click)="saveApiKey()"
+                        class="w-full py-2 bg-white/10 hover:bg-white/20 text-xs font-bold rounded-lg transition-colors border border-white/5"
+                    >
+                        Save Configuration
+                    </button>
+                    <p class="text-[10px] opacity-40 text-center italic">Stored locally in your browser.</p>
+                </div>
+            </div>
+
             <!-- Daily Quests -->
             <div [class]="'p-6 rounded-3xl ' + (darkMode() ? 'glass-dark' : 'glass')">
                 <div class="flex items-center justify-between mb-4">
@@ -265,7 +294,6 @@ import { AuthService } from '../services/auth.service';
                 <div class="space-y-4">
                     @for (quest of userService.quests(); track quest.id) {
                         <div class="flex items-center gap-4">
-                            <!-- Icon/Status -->
                             <div [class]="'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ' + (quest.completed ? 'bg-green-500 text-white' : 'bg-white/10')">
                                 @if (quest.completed) {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -279,7 +307,6 @@ import { AuthService } from '../services/auth.service';
                                     <span [class]="'text-sm font-medium ' + (quest.completed ? 'opacity-50 line-through' : '')">{{ quest.title }}</span>
                                     <span class="text-xs font-bold text-flash-accent">+{{ quest.xpReward }} XP</span>
                                 </div>
-                                <!-- Progress Bar -->
                                 <div class="h-1.5 bg-black/20 rounded-full overflow-hidden">
                                     <div class="h-full bg-flash-accent transition-all duration-500" [style.width]="(quest.progress / quest.total * 100) + '%'"></div>
                                 </div>
@@ -289,17 +316,6 @@ import { AuthService } from '../services/auth.service';
                 </div>
             </div>
 
-            <!-- Promotion Box -->
-            <div class="p-6 rounded-3xl bg-gradient-to-br from-flash-primary to-blue-700 text-white relative overflow-hidden">
-                <div class="relative z-10">
-                    <h3 class="font-bold text-lg mb-2">Try Super Learnix</h3>
-                    <p class="text-sm opacity-90 mb-4">Unlimited hearts, personalized practice, and no ads.</p>
-                    <button class="w-full py-2 bg-white text-blue-600 font-bold rounded-xl text-sm hover:bg-gray-100 transition-colors">
-                        Free Trial
-                    </button>
-                </div>
-                <div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 rounded-full bg-white/20 blur-xl"></div>
-            </div>
         </div>
 
       </div>
@@ -311,12 +327,16 @@ export class DashboardComponent {
   darkMode = input.required<boolean>();
   userService = inject(UserService);
   authService = inject(AuthService);
+  geminiService = inject(GeminiService);
   
   onStartLesson = output<{topic: string, domain: string}>();
   onOpenBlender = output<void>();
   
   customTopic = '';
   viewMode = signal<'paths' | 'history'>('paths');
+
+  tempApiKey = this.geminiService.apiKey();
+  showKey = false;
 
   paths = [
     {
@@ -376,5 +396,10 @@ export class DashboardComponent {
   startCustomLesson() {
     if(!this.customTopic) return;
     this.onStartLesson.emit({ topic: this.customTopic, domain: 'General Knowledge' });
+  }
+
+  saveApiKey() {
+    this.geminiService.setApiKey(this.tempApiKey);
+    alert('AI Configuration updated successfully!');
   }
 }
