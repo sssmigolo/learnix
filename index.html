@@ -67,6 +67,13 @@
       -webkit-backdrop-filter: blur(40px);
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
+
+    /* Common Animations */
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
   <script>
     tailwind.config = {
@@ -92,12 +99,12 @@
     "rxjs/webSocket": "https://esm.sh/rxjs@^7.8.2/webSocket?conditions=es2015",
     "rxjs/testing": "https://esm.sh/rxjs@^7.8.2/testing?conditions=es2015",
     "rxjs/fetch": "https://esm.sh/rxjs@^7.8.2/fetch?conditions=es2015",
-    "@angular/compiler": "https://esm.sh/@angular/compiler@^21.1.5?external=rxjs",
-    "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@^21.1.5?external=rxjs",
-    "@angular/core": "https://esm.sh/@angular/core@^21.1.5?external=rxjs",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0?external=rxjs",
-    "@angular/common": "https://esm.sh/@angular/common@^21.1.5?external=rxjs",
-    "@angular/forms": "https://esm.sh/@angular/forms@^21.1.5?external=rxjs"
+    "@angular/compiler": "https://esm.sh/@angular/compiler@^18.2.0?external=rxjs",
+    "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@^18.2.0?external=rxjs",
+    "@angular/core": "https://esm.sh/@angular/core@^18.2.0?external=rxjs",
+    "@google/genai": "https://esm.sh/@google/genai@^1.42.0?external=rxjs",
+    "@angular/common": "https://esm.sh/@angular/common@^18.2.0?external=rxjs",
+    "@angular/forms": "https://esm.sh/@angular/forms@^18.2.0?external=rxjs"
   }
 }
 </script>

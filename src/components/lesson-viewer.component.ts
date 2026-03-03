@@ -240,7 +240,7 @@ declare var hljs: any;
                                             
                                             <!-- Actual textarea (on top) -->
                                             <textarea 
-                                                [(ngModel)]="userCode"
+                                                [ngModel]="userCode()" (ngModelChange)="userCode.set($event)"
                                                 (scroll)="syncScroll($event)"
                                                 spellcheck="false"
                                                 class="editor-textarea absolute inset-0 w-full h-40 bg-transparent text-transparent caret-white font-mono text-sm p-4 rounded-xl border-transparent focus:outline-none focus:border-flash-accent focus:ring-1 focus:ring-flash-accent resize-none leading-relaxed overflow-auto custom-scrollbar"

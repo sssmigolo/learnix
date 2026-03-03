@@ -9,28 +9,23 @@ export class GeminiService {
   private imageCache = new Map<string, string>();
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    const apiKey = (globalThis as any).process?.env?.['GEMINI_API_KEY'] || (globalThis as any).process?.env?.['API_KEY'] || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   private handleError(e: any, context: string): Error {
     console.error(`Error in ${context}:`, e);
 
-    // Helper to recursively find the deepest 'error' object and parse JSON messages
     const getErrorDetails = (err: any): any => {
         if (!err) return null;
-        // If there's a nested error property, go deeper
         if (err.error) return getErrorDetails(err.error);
         
-        // Sometimes the message field itself contains a JSON string
         if (typeof err.message === 'string') {
             try {
                 const parsed = JSON.parse(err.message);
-                // If the parsed message has its own error object, recurse again
                 if (parsed.error) return getErrorDetails(parsed.error);
                 return parsed;
-            } catch (parseError) {
-                // It's not a JSON string, so we'll treat `err` as the details object
-            }
+            } catch (parseError) {}
         }
         return err;
     };
@@ -39,7 +34,6 @@ export class GeminiService {
     const status = details.status || '';
     const message = (details.message || e.message || '').toString().toLowerCase();
 
-    // Handle errors based on the standardized status code first
     switch (status) {
         case 'RESOURCE_EXHAUSTED':
             return new Error('You\'ve made too many requests. Please wait a moment and try again.');
@@ -51,7 +45,6 @@ export class GeminiService {
             return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
     }
 
-    // Fallback to checking string content if status is not available or unrecognized
     if (message.includes('429') || message.includes('quota') || message.includes('resource_exhausted')) {
         return new Error('You\'ve made too many requests. Please wait a moment and try again.');
     }
@@ -65,13 +58,11 @@ export class GeminiService {
         return new Error('The AI model experienced an internal error. This is often temporary. Please try again in a few moments.');
     }
     
-    // Final generic fallback for any other error
     return new Error(`Could not ${context}. The AI model might be unavailable or an unknown error occurred.`);
   }
 
-  // Generates a Brilliant-style interactive lesson
   async generateInteractiveLesson(topic: string, domain: string) {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemma-2-9b-it';
     const prompt = `
       Create an engaging, gamified, and interactive lesson for the topic "${topic}" in the domain of "${domain}".
       The lesson should be structured to build understanding from the ground up.
@@ -171,7 +162,7 @@ export class GeminiService {
   }
   
   async blendCurriculum(topic: string, local: string, international: string) {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemma-2-9b-it';
     const prompt = `
       Analyze the topic "${topic}" from two educational perspectives:
       1. ${local} curriculum
@@ -242,7 +233,7 @@ export class GeminiService {
   }
 
   createTutorChat(topic: string, challengeContext: string, role?: string, challengeType?: string): Chat {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemma-2-9b-it';
     const systemInstruction = `
         You are "Learnix Tutor," a friendly and encouraging AI assistant for a gamified learning platform.
         Your goal is to help students understand concepts without giving away direct answers to challenges.
@@ -268,7 +259,7 @@ export class GeminiService {
   }
 
   async evaluateCode(code: string, problem: string): Promise<{ isCorrect: boolean; feedback: string; output: string }> {
-    const model = 'gemini-2.5-flash';
+    const model = 'gemma-2-9b-it';
     const prompt = `
       You are a Python code interpreter and grader.
       The user was given this problem: "${problem}".
@@ -319,31 +310,8 @@ export class GeminiService {
     if (this.imageCache.has(prompt)) {
       return this.imageCache.get(prompt)!;
     }
-    const model = 'imagen-4.0-generate-001';
-    try {
-      const response = await this.ai.models.generateImages({
-        model: model,
-        prompt: `${prompt}, photorealistic, high quality, 4k, cinematic`,
-        config: {
-          numberOfImages: 1,
-          outputMimeType: 'image/jpeg',
-          aspectRatio: '1:1',
-        },
-      });
-
-      const base64ImageBytes = response.generatedImages?.[0]?.image?.imageBytes;
-      if (base64ImageBytes) {
-        const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
-        this.imageCache.set(prompt, imageUrl);
-        return imageUrl;
-      }
-      
-      // Fallback if image data is not in the expected structure
-      return 'https://picsum.photos/seed/fallback/600/600';
-    } catch (e) {
-      const error = this.handleError(e, 'generate image');
-      console.error(error.message); // Log specific error for debugging
-      return 'https://picsum.photos/seed/error/600/600';
-    }
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=600&model=flux&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+    this.imageCache.set(prompt, pollinationsUrl);
+    return pollinationsUrl;
   }
 }
