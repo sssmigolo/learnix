@@ -73,7 +73,7 @@ export class AppComponent implements OnInit {
         if (!this.authService.currentUser()) {
             this.currentView.set('dashboard');
         }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit() {

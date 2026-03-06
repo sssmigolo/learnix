@@ -67,7 +67,7 @@ declare var hljs: any;
       } @else if (error()) {
         <div class="flex-1 flex flex-col items-center justify-center text-center p-8 animate-fade-in">
             <div class="w-16 h-16 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <h2 class="text-xl font-bold text-red-400">Lesson Generation Failed</h2>
             <p class="opacity-70 mt-2 mb-6 max-w-md">{{ error() }}</p>
@@ -601,7 +601,7 @@ export class LessonViewerComponent implements OnDestroy {
       if(this.topic()) {
         this.loadLesson();
       }
-    });
+    }, { allowSignalWrites: true });
 
     // Effect for saving progress
     effect(() => {
@@ -609,7 +609,7 @@ export class LessonViewerComponent implements OnDestroy {
         if (typeof localStorage !== 'undefined' && this.lessonData() && !this.isLessonComplete() && !this.isLoading()) {
             this.saveProgress();
         }
-    });
+    }, { allowSignalWrites: true });
 
     // Effect for confetti on lesson completion
     effect(() => {

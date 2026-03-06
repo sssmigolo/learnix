@@ -5,16 +5,42 @@ import { GoogleGenAI, Type, Chat } from '@google/genai';
   providedIn: 'root'
 })
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai!: GoogleGenAI;
   private imageCache = new Map<string, string>();
+  private isAIReady = false;
 
   constructor() {
-    const apiKey = (globalThis as any).process?.env?.['GEMINI_API_KEY'] || (globalThis as any).process?.env?.['API_KEY'] || '';
+    this.initializeAI();
+  }
+
+  private initializeAI() {
+    const globalEnv = (globalThis as any).process?.env || {};
+    const viteEnv = (import.meta as any).env || {};
+
+    const apiKey = viteEnv.VITE_GEMINI_API_KEY ||
+                   globalEnv.GEMINI_API_KEY ||
+                   viteEnv.VITE_API_KEY ||
+                   globalEnv.API_KEY ||
+                   '';
+
+    if (!apiKey) {
+        console.warn('Learnix: Gemini API key not found in environment. AI features will be limited.');
+        this.isAIReady = false;
+        // Provide a dummy object to prevent constructor crashes, but mark it as not ready
+        this.ai = new GoogleGenAI({ apiKey: 'MISSING_KEY' });
+        return;
+    }
+
     this.ai = new GoogleGenAI({ apiKey });
+    this.isAIReady = true;
   }
 
   private handleError(e: any, context: string): Error {
     console.error(`Error in ${context}:`, e);
+
+    if (!this.isAIReady) {
+        return new Error('AI features are currently unavailable because the API key is not configured.');
+    }
 
     const getErrorDetails = (err: any): any => {
         if (!err) return null;
@@ -62,6 +88,7 @@ export class GeminiService {
   }
 
   async generateInteractiveLesson(topic: string, domain: string) {
+    if (!this.isAIReady) throw this.handleError({}, 'generate lesson');
     const model = 'gemma-2-9b-it';
     const prompt = `
       Create an engaging, gamified, and interactive lesson for the topic "${topic}" in the domain of "${domain}".
@@ -162,6 +189,7 @@ export class GeminiService {
   }
   
   async blendCurriculum(topic: string, local: string, international: string) {
+    if (!this.isAIReady) throw this.handleError({}, 'blend curriculum');
     const model = 'gemma-2-9b-it';
     const prompt = `
       Analyze the topic "${topic}" from two educational perspectives:
@@ -233,6 +261,10 @@ export class GeminiService {
   }
 
   createTutorChat(topic: string, challengeContext: string, role?: string, challengeType?: string): Chat {
+    if (!this.isAIReady) {
+        // Return a mock chat that always fails or does nothing?
+        // Better to return the real one but handle errors on sendMessage.
+    }
     const model = 'gemma-2-9b-it';
     const systemInstruction = `
         You are "Learnix Tutor," a friendly and encouraging AI assistant for a gamified learning platform.
@@ -259,6 +291,7 @@ export class GeminiService {
   }
 
   async evaluateCode(code: string, problem: string): Promise<{ isCorrect: boolean; feedback: string; output: string }> {
+    if (!this.isAIReady) return { isCorrect: false, feedback: 'AI evaluation unavailable.', output: '' };
     const model = 'gemma-2-9b-it';
     const prompt = `
       You are a Python code interpreter and grader.
